@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Food Ordering System</title>
+    <link rel="stylesheet" href="css/register.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="images/logo.png" alt="Food Express Logo">
+                <span>Food Express</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="register.html" class="active">Register</a>
+                <a href="login.html">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Registration Form -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Create Your Account</h2>
+            <p class="auth-subtitle">Join us to order delicious food</p>
+            
+            <!-- User Type Selection -->
+            <div class="user-type-selection">
+                <div class="type-options">
+                    <button class="type-option active" data-type="customer">
+                        <i>👤</i>
+                        <span>Customer</span>
+                        <small>Order food, track delivery</small>
+                    </button>
+                    <button class="type-option" data-type="restaurant">
+                        <i>🏪</i>
+                        <span>Restaurant Owner</span>
+                        <small>Sell food, manage orders</small>
+                    </button>
+                    <button class="type-option" data-type="rider">
+                        <i>🚴</i>
+                        <span>Delivery Rider</span>
+                        <small>Deliver food, earn money</small>
+                    </button>
+                </div>
+            </div>
+            
+            <form id="registerForm" class="auth-form">
+                <!-- User Type (hidden) -->
+                <input type="hidden" id="user_type" name="user_type" value="customer">
+                
+                <!-- Personal Information -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" placeholder="Enter first name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" placeholder="Enter last name" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    <div class="error-message" id="email-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required>
+                </div>
+                
+                <!-- Password -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Create password" required>
+                        <div class="password-strength" id="password-strength"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
+                        <div class="error-message" id="password-error"></div>
+                    </div>
+                </div>
+                
+                <!-- Address (for all users) -->
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" rows="2" placeholder="Enter your address" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+                
+                <div class="auth-divider">
+                    <span>Already have an account?</span>
+                </div>
+                
+                <div class="auth-footer">
+                    <p><a href="login.html">Login here</a></p>
+                    <p><a href="index.html">← Back to Home</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Food Ordering System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>
