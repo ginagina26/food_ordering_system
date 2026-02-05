@@ -1,197 +1,165 @@
-// Authentication JavaScript
+// DOM Elements
+const userTypeOptions = document.querySelectorAll('.type-option');
+const userTypeInput = document.getElementById('user_type');
+const registerForm = document.getElementById('registerForm');
+const passwordInput = document.getElementById('password');
+const confirmPasswordInput = document.getElementById('confirm_password');
+const passwordStrength = document.getElementById('password-strength');
+const emailInput = document.getElementById('email');
+const emailError = document.getElementById('email-error');
+const passwordError = document.getElementById('password-error');
 
 // User Type Selection
-document.addEventListener('DOMContentLoaded', function() {
-    // Handle user type selection in registration
-    const typeOptions = document.querySelectorAll('.type-option');
-    const userTypeInput = document.getElementById('user_type');
-    const restaurantInfo = document.getElementById('restaurantInfo');
-    const restaurantName = document.getElementById('restaurant_name');
-    const cuisineType = document.getElementById('cuisine_type');
-    
-    if (typeOptions.length > 0) {
-        typeOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                // Remove active class from all options
-                typeOptions.forEach(opt => opt.classList.remove('active'));
-                
-                // Add active class to clicked option
-                this.classList.add('active');
-                
-                // Update hidden input
-                const type = this.getAttribute('data-type');
-                userTypeInput.value = type;
-                
-                // Show/hide restaurant info
-                if (type === 'restaurant') {
-                    restaurantInfo.style.display = 'block';
-                    restaurantName.required = true;
-                    cuisineType.required = true;
-                } else {
-                    restaurantInfo.style.display = 'none';
-                    restaurantName.required = false;
-                    cuisineType.required = false;
-                }
-            });
-        });
-    }
-    
-    // Login Form Validation
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (!email || !password) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            // For demo purposes - redirect to dashboard
-            console.log('Login attempt:', { email, password });
-            alert('Login successful! Redirecting to dashboard...');
-            
-            // Simulate API call
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1000);
-        });
-    }
-    
-    // Registration Form Validation
-    const registerForm = document.getElementById('registerForm');
-    if (registerForm) {
-        // Password validation
-        const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('confirm_password');
-        const passwordError = document.getElementById('password-error');
-        const passwordStrength = document.getElementById('password-strength');
+userTypeOptions.forEach(option => {
+    option.addEventListener('click', () => {
+        // Remove active class from all options
+        userTypeOptions.forEach(opt => opt.classList.remove('active'));
         
-        passwordInput.addEventListener('input', function() {
-            const password = this.value;
-            let strength = 'Weak';
-            let color = '#dc3545';
-            
-            if (password.length >= 8) {
-                if (/[A-Z]/.test(password) && /[0-9]/.test(password)) {
-                    strength = 'Strong';
-                    color = '#28a745';
-                } else {
-                    strength = 'Medium';
-                    color = '#ffc107';
-                }
-            }
-            
-            passwordStrength.textContent = `Password strength: ${strength}`;
-            passwordStrength.style.color = color;
-        });
+        // Add active class to clicked option
+        option.classList.add('active');
         
-        confirmPasswordInput.addEventListener('input', function() {
-            if (this.value !== passwordInput.value) {
-                passwordError.textContent = 'Passwords do not match';
-            } else {
-                passwordError.textContent = '';
-            }
-        });
+        // Update hidden input value
+        const type = option.getAttribute('data-type');
+        userTypeInput.value = type;
         
-        // Form submission
-        registerForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Basic validation
-            const terms = document.getElementById('terms');
-            if (!terms.checked) {
-                alert('Please agree to the Terms & Conditions');
-                return;
-            }
-            
-            if (passwordInput.value !== confirmPasswordInput.value) {
-                alert('Passwords do not match');
-                return;
-            }
-            
-            // Collect form data
-            const formData = {
-                user_type: userTypeInput.value,
-                first_name: document.getElementById('first_name').value,
-                last_name: document.getElementById('last_name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                password: passwordInput.value,
-                address: document.getElementById('address').value
-            };
-            
-            // Add restaurant info if applicable
-            if (userTypeInput.value === 'restaurant') {
-                formData.restaurant_name = restaurantName.value;
-                formData.cuisine_type = cuisineType.value;
-            }
-            
-            console.log('Registration data:', formData);
-            alert('Registration successful! Redirecting to login...');
-            
-            // Simulate API call
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 1500);
-        });
+        // Optional: Update form based on user type
+        updateFormForUserType(type);
+    });
+});
+
+// Password Strength Indicator
+passwordInput.addEventListener('input', function() {
+    const password = this.value;
+    let strength = 0;
+    
+    // Check password strength
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    
+    // Update strength indicator
+    const width = strength * 25;
+    passwordStrength.style.width = width + '%';
+    
+    // Update color based on strength
+    if (strength <= 1) {
+        passwordStrength.style.backgroundColor = '#e74c3c';
+    } else if (strength <= 3) {
+        passwordStrength.style.backgroundColor = '#f39c12';
+    } else {
+        passwordStrength.style.backgroundColor = '#27ae60';
     }
 });
 
-// Demo Login Function
-function demoLogin(type) {
-    const demos = {
-        customer: {
-            email: 'customer@demo.com',
-            password: 'demo123'
-        },
-        restaurant: {
-            email: 'restaurant@demo.com',
-            password: 'demo123'
-        },
-        rider: {
-            email: 'rider@demo.com',
-            password: 'demo123'
-        }
-    };
+// Password Confirmation
+confirmPasswordInput.addEventListener('input', function() {
+    const password = passwordInput.value;
+    const confirmPassword = this.value;
     
-    const demo = demos[type];
-    if (!demo) return;
-    
-    // Auto-fill login form
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    
-    if (emailInput && passwordInput) {
-        emailInput.value = demo.email;
-        passwordInput.value = demo.password;
-        
-        // Auto-submit after a delay
-        setTimeout(() => {
-            if (document.getElementById('loginForm')) {
-                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
-            }
-        }, 500);
+    if (password !== confirmPassword) {
+        passwordError.textContent = 'Passwords do not match';
+        this.style.borderColor = '#e74c3c';
     } else {
-        alert(`Demo ${type} login\nEmail: ${demo.email}\nPassword: ${demo.password}`);
+        passwordError.textContent = '';
+        this.style.borderColor = '#27ae60';
     }
-}
-
-// Password Visibility Toggle (Optional Enhancement)
-function togglePasswordVisibility(inputId) {
-    const input = document.getElementById(inputId);
-    if (input.type === 'password') {
-        input.type = 'text';
-    } else {
-        input.type = 'password';
-    }
-}
+});
 
 // Email Validation
-function validateEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+emailInput.addEventListener('blur', function() {
+    const email = this.value;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (email && !emailRegex.test(email)) {
+        emailError.textContent = 'Please enter a valid email address';
+        this.style.borderColor = '#e74c3c';
+    } else {
+        emailError.textContent = '';
+        this.style.borderColor = '#27ae60';
+    }
+});
+
+// Form Submission
+registerForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validate form
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
+    const email = emailInput.value;
+    
+    let isValid = true;
+    
+    // Check password match
+    if (password !== confirmPassword) {
+        passwordError.textContent = 'Passwords do not match';
+        confirmPasswordInput.style.borderColor = '#e74c3c';
+        isValid = false;
+    }
+    
+    // Check email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        emailError.textContent = 'Please enter a valid email address';
+        emailInput.style.borderColor = '#e74c3c';
+        isValid = false;
+    }
+    
+    // If form is valid, submit (in real app, this would send to server)
+    if (isValid) {
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.innerHTML = '<span class="loading"></span> Creating Account...';
+        submitBtn.disabled = true;
+        
+        // Simulate API call
+        setTimeout(() => {
+            // In a real application, you would send data to your server here
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            console.log('Registration data:', data);
+            
+            // Show success message (in real app, redirect to login or dashboard)
+            alert('Account created successfully! Please check your email for verification.');
+            
+            // Reset form
+            this.reset();
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            
+            // Reset user type selection
+            userTypeOptions.forEach(opt => opt.classList.remove('active'));
+            userTypeOptions[0].classList.add('active');
+            userTypeInput.value = 'customer';
+            
+            // Redirect to login page
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+            
+        }, 2000);
+    }
+});
+
+// Helper function to update form based on user type
+function updateFormForUserType(type) {
+    // You can customize form behavior based on user type
+    const addressField = document.getElementById('address');
+    
+    switch(type) {
+        case 'restaurant':
+            addressField.placeholder = 'Enter restaurant address';
+            break;
+        case 'rider':
+            addressField.placeholder = 'Enter your home address';
+            break;
+        default:
+            addressField.placeholder = 'Enter your address';
+    }
 }
+
+// Initialize form based on default selection
+updateFormForUserType('customer');
