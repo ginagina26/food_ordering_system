@@ -19,7 +19,7 @@ A simple web-based food ordering system built with PHP, MySQL, and frontend tech
 - **Database:** MySQL
 - **Server:** XAMPP (Apache)
 ## 📂File Structure
----food_ordering_system/
+--**food_ordering_system**/
 -**│── frontend**/        # User-facing pages
 -**│── backend**/         # Server-side logic and admin panel
 -**│── database**/        # SQL scripts for database setup
