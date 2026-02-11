@@ -49,7 +49,7 @@ window.loadDashboard = function () {
         document.getElementById('stat-items').innerText = items.length;
 
         const revenue = orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0);
-        document.getElementById('stat-revenue').innerText = '$' + revenue.toFixed(2);
+        document.getElementById('stat-revenue').innerText = 'TSh ' + revenue.toFixed(2);
     }).catch(err => console.error(err));
 };
 
@@ -58,10 +58,28 @@ window.loadDashboard = function () {
 /* -------------------------------------------------------------------------- */
 window.loadOrders = function () {
     fetch(`${API_BASE}/orders.php`)
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
         .then(orders => {
             const tbody = document.getElementById('ordersTableBody');
             tbody.innerHTML = '';
+
+            if (!orders || orders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: #666;">
+                            <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">📦 No orders yet</p>
+                            <p style="font-size: 0.9rem;">Orders will appear here when customers place them.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
             orders.forEach(o => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -77,13 +95,26 @@ window.loadOrders = function () {
                             <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
                         </select>
                     </td>
-                    <td>$${o.total_amount}</td>
+                    <td>TSh ${o.total_amount}</td>
                     <td>
                        <button class="btn btn-sm btn-danger" onclick="alert('Order deletion not implemented for safety')">Del</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        })
+        .catch(err => {
+            console.error('Error loading orders:', err);
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem; color: #e74c3c;">
+                        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">⚠️ Error loading orders</p>
+                        <p style="font-size: 0.9rem;">${err.message}</p>
+                        <button onclick="loadOrders()" class="btn btn-primary" style="margin-top: 1rem;">Retry</button>
+                    </td>
+                </tr>
+            `;
         });
 };
 
@@ -158,7 +189,7 @@ window.loadMenu = function () {
                     <td>${i.id}</td>
                     <td>${i.name}</td>
                     <td>${i.restaurant_name || 'ID: ' + i.restaurant_id}</td>
-                    <td>$${i.price}</td>
+                    <td>TSh ${i.price}</td>
                     <td>${i.is_available == 1 ? 'Yes' : 'No'}</td>
                     <td>
                         <button class="btn btn-sm btn-warning" onclick='window.editMenuItem(${JSON.stringify(i).replace(/'/g, "&#39;")})'>Edit</button>
@@ -241,15 +272,23 @@ if (menuForm) {
             method: 'POST',
             body: formData
         })
-            .then(res => res.json()) // text to debug if needed
+            .then(res => {
+                // Check if response is ok
+                if (!res.ok) {
+                    return res.json().then(err => {
+                        throw new Error(err.message || `Server error: ${res.status}`);
+                    });
+                }
+                return res.json();
+            })
             .then(d => {
                 alert(d.message || "Operation successful");
                 closeModal();
                 loadMenu();
             })
             .catch(err => {
-                console.error(err);
-                alert("Error saving item");
+                console.error('Error details:', err);
+                alert("Error saving item: " + err.message);
             });
     });
 }
@@ -258,4 +297,21 @@ if (menuForm) {
 document.getElementById('logoutBtn').addEventListener('click', function () {
     localStorage.removeItem('user');
     window.location.href = 'login.html';
+});
+
+// Initialize admin dashboard on page load
+document.addEventListener('DOMContentLoaded', function () {
+    // Check if user is admin
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user || user.role !== 'admin') {
+        alert('Access denied. Admin privileges required.');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Load all dashboard data
+    loadStats();
+    loadOrders();
+    loadUsers();
+    loadMenu();
 });

@@ -125,7 +125,7 @@ function loadFeaturedItems() {
                     <div class="item-content">
                         <div class="item-header">
                             <h3 class="item-title">${item.name}</h3>
-                            <span class="item-price">$${item.price}</span>
+                            <span class="item-price">TSh ${item.price}</span>
                         </div>
                         <span class="item-restaurant">by ${item.restaurant_name || 'Gourmet Kitchen'}</span>
                         <p class="item-desc">${item.description || 'Delicious food item.'}</p>
@@ -142,7 +142,53 @@ function loadFeaturedItems() {
 }
 
 function addToCart(itemId) {
-    // Placeholder for cart functionality
-    alert('Item added to cart! (Feature coming soon)');
+    // Check if user is logged in
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+        alert('Please login to add items to cart');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Get the item details from the page or fetch from API
+    fetch('/food_ordering_system/backend/api/menu.php?limit=100')
+        .then(res => res.json())
+        .then(items => {
+            const item = items.find(i => i.id == itemId);
+            if (!item) {
+                alert('Item not found');
+                return;
+            }
+
+            // Get existing cart or create new
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            // Check if item already in cart
+            const existingIndex = cart.findIndex(c => c.id == itemId);
+            if (existingIndex >= 0) {
+                cart[existingIndex].quantity += 1;
+            } else {
+                cart.push({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    restaurant_id: item.restaurant_id,
+                    restaurant_name: item.restaurant_name,
+                    image_url: item.image_url,
+                    quantity: 1
+                });
+            }
+
+            // Save cart
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            // Redirect to order page
+            window.location.href = 'order.html';
+        })
+        .catch(err => {
+            console.error('Error adding to cart:', err);
+            alert('Failed to add item to cart');
+        });
 }
+
 

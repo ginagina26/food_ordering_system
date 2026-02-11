@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -588,11 +589,11 @@
             .order-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .cart-sidebar {
                 position: static;
             }
-            
+
             .food-items-grid {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
@@ -603,79 +604,80 @@
                 flex-direction: column;
                 gap: 1rem;
             }
-            
+
             .nav-links {
                 width: 100%;
                 justify-content: center;
                 flex-wrap: wrap;
             }
-            
+
             .search-hero h1 {
                 font-size: 2rem;
             }
-            
+
             .section-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 1rem;
             }
-            
+
             .filter-tabs {
                 width: 100%;
                 justify-content: center;
             }
-            
+
             .food-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 0.5rem;
             }
-            
+
             .food-price {
                 margin-left: 0;
             }
-            
+
             .food-actions {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .add-to-cart {
                 width: 100%;
             }
         }
 
         @media (max-width: 480px) {
+
             .food-section,
             .cart-sidebar {
                 padding: 1.5rem;
             }
-            
+
             .food-items-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .main-search-box {
                 flex-direction: column;
                 gap: 0.5rem;
                 padding: 1rem;
             }
-            
+
             .main-search-box input,
             .main-search-btn {
                 width: 100%;
             }
-            
+
             .cart-item {
                 flex-direction: column;
                 text-align: center;
                 gap: 1rem;
             }
-            
+
             .cart-item-actions {
                 justify-content: center;
             }
-            
+
             .cart-item-price {
                 text-align: center;
             }
@@ -693,7 +695,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Success Message */
@@ -806,6 +810,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -868,7 +873,7 @@
                 <div class="cart-header">
                     <h3>🛒 Your Order</h3>
                 </div>
-                
+
                 <div class="cart-items" id="cartItems">
                     <!-- Cart items will be populated by JavaScript -->
                 </div>
@@ -890,7 +895,7 @@
                         <span>Total</span>
                         <span id="total">Tshs 3,000</span>
                     </div>
-                    
+
                     <button class="btn btn-primary checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
                 </div>
             </div>
@@ -904,18 +909,19 @@
                 <h2>Complete Your Order</h2>
                 <button class="close-modal" id="closeModal">&times;</button>
             </div>
-            
+
             <form id="checkoutForm">
                 <div class="form-group">
                     <label for="deliveryAddress">Delivery Address</label>
                     <input type="text" id="deliveryAddress" placeholder="Enter delivery address" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="deliveryInstructions">Delivery Instructions (Optional)</label>
-                    <textarea id="deliveryInstructions" rows="3" placeholder="Add special instructions for delivery"></textarea>
+                    <textarea id="deliveryInstructions" rows="3"
+                        placeholder="Add special instructions for delivery"></textarea>
                 </div>
-                
+
                 <div class="form-group">
                     <label>Payment Method</label>
                     <div class="payment-options">
@@ -928,11 +934,11 @@
                     </div>
                     <input type="hidden" id="paymentMethod" value="cash">
                 </div>
-                
+
                 <div class="form-group" id="mobileMoneyDetails" style="display: none;">
                     <label for="phoneNumber">Mobile Money Number</label>
                     <input type="text" id="mobileNumber" placeholder="Enter your mobile money number">
-                    
+
                     <div style="margin-top: 1rem;">
                         <label for="network">Select Network</label>
                         <select id="network">
@@ -945,12 +951,12 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="phoneNumber">Phone Number</label>
                     <input type="tel" id="phoneNumber" placeholder="Enter phone number for delivery updates" required>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">Place Order</button>
             </form>
         </div>
@@ -963,8 +969,51 @@
     </div>
 
     <script>
-        // Sample food items data with Tanzanian Shillings
-        const foodItems = [
+        // Food items array - will be loaded from API
+        let foodItems = [];
+
+        // Load food items from API
+        function loadFoodItemsFromAPI() {
+            fetch('/food_ordering_system/backend/api/menu.php?limit=100')
+                .then(res => res.json())
+                .then(items => {
+                    // Transform API data to match expected format
+                    foodItems = items.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        description: item.description || 'Delicious food item',
+                        price: parseFloat(item.price),
+                        image: item.image_url ? `/food_ordering_system/frontend/${item.image_url}` : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                        restaurant: item.restaurant_name || 'Gourmet Kitchen',
+                        restaurant_id: item.restaurant_id,
+                        category: getCategoryFromId(item.category_id),
+                        rating: 4.5,
+                        deliveryTime: '20-30 min'
+                    }));
+
+                    // Render items after loading
+                    renderFoodItems(activeCategory);
+                })
+                .catch(err => {
+                    console.error('Error loading food items:', err);
+                    alert('Failed to load menu items. Please refresh the page.');
+                });
+        }
+
+        // Helper function to map category_id to category name
+        function getCategoryFromId(categoryId) {
+            const categoryMap = {
+                1: 'pizza',
+                2: 'burger',
+                3: 'sides',
+                4: 'drinks',
+                5: 'dessert'
+            };
+            return categoryMap[categoryId] || 'all';
+        }
+
+        // Sample food items data with Tanzanian Shillings (FALLBACK - will be replaced by API)
+        const foodItemsFallback = [
             {
                 id: 1,
                 name: "Pepperoni Pizza",
@@ -1088,15 +1137,15 @@
             const userStatus = document.getElementById('userStatus');
             const userAvatar = userStatus.querySelector('.user-avatar');
             const userText = userStatus.querySelector('span');
-            
+
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             const userEmail = localStorage.getItem('userEmail');
-            
+
             if (isLoggedIn === 'true' && userEmail) {
                 const userInitial = userEmail.charAt(0).toUpperCase();
                 userAvatar.textContent = userInitial;
                 userText.textContent = userEmail.split('@')[0];
-                
+
                 // Update login button to dashboard
                 const loginBtn = document.querySelector('a[href="login.html"]');
                 if (loginBtn) {
@@ -1109,25 +1158,25 @@
         // Render food items
         function renderFoodItems(category = 'all', searchTerm = '') {
             foodItemsGrid.innerHTML = '';
-            
+
             let filteredItems = foodItems;
-            
+
             // Filter by category
             if (category !== 'all') {
                 filteredItems = filteredItems.filter(item => item.category === category);
             }
-            
+
             // Filter by search term
             if (searchTerm) {
                 const term = searchTerm.toLowerCase();
-                filteredItems = filteredItems.filter(item => 
+                filteredItems = filteredItems.filter(item =>
                     item.name.toLowerCase().includes(term) ||
                     item.description.toLowerCase().includes(term) ||
                     item.restaurant.toLowerCase().includes(term) ||
                     item.category.toLowerCase().includes(term)
                 );
             }
-            
+
             if (filteredItems.length === 0) {
                 foodItemsGrid.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #666;">
@@ -1137,11 +1186,11 @@
                 `;
                 return;
             }
-            
+
             filteredItems.forEach(item => {
                 const cartItem = cart.find(cartItem => cartItem.id === item.id);
                 const quantity = cartItem ? cartItem.quantity : 0;
-                
+
                 const foodItem = document.createElement('div');
                 foodItem.className = 'food-item-card';
                 foodItem.innerHTML = `
@@ -1175,10 +1224,10 @@
                         </div>
                     </div>
                 `;
-                
+
                 foodItemsGrid.appendChild(foodItem);
             });
-            
+
             // Add event listeners
             document.querySelectorAll('.quantity-btn.minus').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -1187,7 +1236,7 @@
                     updateCartItemQuantity(itemId, -1);
                 });
             });
-            
+
             document.querySelectorAll('.quantity-btn.plus').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1195,7 +1244,7 @@
                     updateCartItemQuantity(itemId, 1);
                 });
             });
-            
+
             document.querySelectorAll('.add-to-cart').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1208,7 +1257,7 @@
         // Add item to cart
         function addToCart(item) {
             const existingItem = cart.find(cartItem => cartItem.id === item.id);
-            
+
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
@@ -1217,7 +1266,7 @@
                     quantity: 1
                 });
             }
-            
+
             updateCart();
             saveCart();
             renderFoodItems(activeCategory);
@@ -1227,7 +1276,7 @@
         function updateCart() {
             // Clear cart items
             cartItems.innerHTML = '';
-            
+
             if (cart.length === 0) {
                 cartItems.innerHTML = `
                     <div class="empty-cart">
@@ -1260,27 +1309,27 @@
                     `;
                     cartItems.appendChild(cartItem);
                 });
-                
+
                 // Add event listeners for cart buttons
                 document.querySelectorAll('.cart-quantity-btn.minus').forEach(btn => {
                     btn.addEventListener('click', () => updateCartItemQuantity(parseInt(btn.dataset.id), -1));
                 });
-                
+
                 document.querySelectorAll('.cart-quantity-btn.plus').forEach(btn => {
                     btn.addEventListener('click', () => updateCartItemQuantity(parseInt(btn.dataset.id), 1));
                 });
-                
+
                 document.querySelectorAll('.remove-item').forEach(btn => {
                     btn.addEventListener('click', () => removeCartItem(parseInt(btn.dataset.id)));
                 });
             }
-            
+
             // Calculate totals
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const deliveryFee = 3000;
             const tax = Math.round(subtotal * 0.18); // 18% tax
             const total = subtotal + deliveryFee + tax;
-            
+
             subtotalEl.textContent = formatCurrency(subtotal);
             taxEl.textContent = formatCurrency(tax);
             totalEl.textContent = formatCurrency(total);
@@ -1321,10 +1370,10 @@
                     tab.classList.remove('active');
                 });
                 e.target.classList.add('active');
-                
+
                 // Update active category
                 activeCategory = e.target.dataset.category;
-                
+
                 // Render filtered items
                 renderFoodItems(activeCategory, mainSearchInput.value);
             }
@@ -1344,10 +1393,10 @@
             option.addEventListener('click', () => {
                 paymentOptions.forEach(opt => opt.classList.remove('active'));
                 option.classList.add('active');
-                
+
                 const method = option.dataset.method;
                 paymentMethodInput.value = method;
-                
+
                 if (method === 'card') {
                     mobileMoneyDetails.style.display = 'block';
                 } else {
@@ -1362,19 +1411,19 @@
                 alert('Your cart is empty. Add some items first!');
                 return;
             }
-            
+
             // Get user info from localStorage
             const userEmail = localStorage.getItem('userEmail');
             const userAddress = localStorage.getItem('userAddress');
-            
+
             if (userAddress) {
                 document.getElementById('deliveryAddress').value = userAddress;
             }
-            
+
             if (userEmail) {
                 document.getElementById('phoneNumber').value = userEmail;
             }
-            
+
             checkoutModal.style.display = 'flex';
         });
 
@@ -1393,74 +1442,113 @@
         // Form submission
         checkoutForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            
+
             const deliveryAddress = document.getElementById('deliveryAddress').value;
             const deliveryInstructions = document.getElementById('deliveryInstructions').value;
             const paymentMethod = paymentMethodInput.value;
             const phoneNumber = document.getElementById('phoneNumber').value;
-            
+
             // Save address for future use
             localStorage.setItem('userAddress', deliveryAddress);
-            
-            // Create order object
-            const order = {
-                id: Date.now(),
-                items: [...cart],
-                deliveryAddress,
-                deliveryInstructions,
-                paymentMethod,
-                phoneNumber,
-                subtotal: parseInt(subtotalEl.textContent.replace(/[^\d]/g, '')),
-                deliveryFee: parseInt(deliveryFeeEl.textContent.replace(/[^\d]/g, '')),
-                tax: parseInt(taxEl.textContent.replace(/[^\d]/g, '')),
-                total: parseInt(totalEl.textContent.replace(/[^\d]/g, '')),
-                status: 'preparing',
-                timestamp: new Date().toISOString()
+
+            // Get user from localStorage
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+                alert('Please login to place an order');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Calculate totals
+            const subtotal = parseInt(subtotalEl.textContent.replace(/[^\d]/g, ''));
+            const deliveryFee = parseInt(deliveryFeeEl.textContent.replace(/[^\d]/g, ''));
+            const tax = parseInt(taxEl.textContent.replace(/[^\d]/g, ''));
+            const total = parseInt(totalEl.textContent.replace(/[^\d]/g, ''));
+
+            // Get restaurant_id from first cart item (assuming all items from same restaurant)
+            const restaurantId = cart[0].restaurant_id || 1;
+
+            // Prepare order data for API
+            const orderData = {
+                user_id: user.id,
+                restaurant_id: restaurantId,
+                total_amount: total,
+                items: cart.map(item => ({
+                    id: item.id,
+                    quantity: item.quantity,
+                    price: item.price
+                }))
             };
-            
-            // Save order to localStorage
-            const orders = JSON.parse(localStorage.getItem('orders')) || [];
-            orders.push(order);
-            localStorage.setItem('orders', JSON.stringify(orders));
-            
-            // Clear cart
-            cart = [];
-            saveCart();
-            updateCart();
-            renderFoodItems(activeCategory);
-            
-            // Close modal and show success message
-            checkoutModal.style.display = 'none';
-            successMessage.style.display = 'block';
-            
-            // Hide success message after 5 seconds
-            setTimeout(() => {
-                successMessage.style.display = 'none';
-            }, 5000);
-            
-            // Reset form
-            checkoutForm.reset();
-            paymentOptions[0].click(); // Reset to cash payment
-            
-            // Redirect to orders page after 3 seconds
-            setTimeout(() => {
-                window.location.href = 'customer-orders.html';
-            }, 3000);
+
+            // Show loading state
+            const submitBtn = checkoutForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.textContent = 'Placing Order...';
+            submitBtn.disabled = true;
+
+            // Send order to backend API
+            fetch('/food_ordering_system/backend/api/orders.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.order_id || data.message.includes('success')) {
+                        // Clear cart
+                        cart = [];
+                        saveCart();
+                        updateCart();
+                        renderFoodItems(activeCategory);
+
+                        // Close modal and show success message
+                        checkoutModal.style.display = 'none';
+                        successMessage.style.display = 'block';
+
+                        // Hide success message after 5 seconds
+                        setTimeout(() => {
+                            successMessage.style.display = 'none';
+                        }, 5000);
+
+                        // Reset form
+                        checkoutForm.reset();
+                        paymentOptions[0].click(); // Reset to cash payment
+
+                        // Redirect to profile page to see orders
+                        setTimeout(() => {
+                            window.location.href = 'profile.html';
+                        }, 3000);
+                    } else {
+                        alert('Error placing order: ' + (data.message || 'Unknown error'));
+                        submitBtn.textContent = originalBtnText;
+                        submitBtn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error placing order:', err);
+                    alert('Failed to place order. Please try again.');
+                    submitBtn.textContent = originalBtnText;
+                    submitBtn.disabled = false;
+                });
         });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initUserStatus();
-            renderFoodItems();
-            updateCart();
-            
-            // Load cart from localStorage
+
+            // Load cart from localStorage first
             const savedCart = localStorage.getItem('cart');
             if (savedCart) {
                 cart = JSON.parse(savedCart);
                 updateCart();
             }
+
+            // Load food items from API
+            loadFoodItemsFromAPI();
         });
     </script>
 </body>
+
 </html>
